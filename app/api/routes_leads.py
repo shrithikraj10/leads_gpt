@@ -11,6 +11,7 @@ class Lead(BaseModel):
     company: str
     industry: str
 
+# Simulated in-memory database
 leads_db = {}
 
 # Create a new lead
@@ -28,44 +29,27 @@ async def get_lead(lead_id: str):
         raise HTTPException(status_code=404, detail="Lead not found")
     return {"lead_id": lead_id, "lead": lead}
 
-# Update a lead
-@router.put("/leads/{lead_id}")
-async def update_lead(lead_id: str, lead: Lead):
-    if lead_id not in leads_db:
-        raise HTTPException(status_code=404, detail="Lead not found")
-    leads_db[lead_id] = lead.dict()
-    return {"message": "Lead updated", "lead": lead}
-
-# Delete a lead
-@router.delete("/leads/{lead_id}")
-async def delete_lead(lead_id: str):
-    if lead_id not in leads_db:
-        raise HTTPException(status_code=404, detail="Lead not found")
-    del leads_db[lead_id]
-    return {"message": "Lead deleted"}
-
-# Get all leads
-@router.get("/leads")
-async def list_leads():
-    return [{"lead_id": k, "lead": v} for k, v in leads_db.items()]
-
 # Search leads
-@router.get("/leads/search")
+@router.get("/search")
 async def search_leads(
     name: Optional[str] = Query(None),
     industry: Optional[str] = Query(None)
 ):
     results = []
+
     for lead_id, lead in leads_db.items():
         if name and name.lower() not in lead["name"].lower():
             continue
-        if industry and industry.lower() != lead["industry"].lower():
+        if industry and industry.lower() not in lead["industry"].lower():
             continue
         results.append({"lead_id": lead_id, "lead": lead})
+
+    if not results:
+        raise HTTPException(status_code=404, detail="Lead not found")
     return results
 
 # Bulk create leads
-@router.post("/leads/bulk-create")
+@router.post("/bulk-create")
 async def bulk_create_leads(leads: List[Lead]):
     created = []
     for lead in leads:

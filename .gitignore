@@ -1,1 +1,29 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Environment variables and secrets
 .env
+.env.*
+
+# Virtual environment
+venv/
+env/
+
+# VSCode and PyCharm settings
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# SQLite or test DBs (if applicable)
+*.sqlite3
+
+# Test cache
+.pytest_cache/

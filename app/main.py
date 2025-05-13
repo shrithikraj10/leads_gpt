@@ -14,7 +14,7 @@ app = FastAPI(
 app.include_router(routes_upload.router, prefix="/upload", tags=["Upload"])
 app.include_router(routes_generate.router, prefix="/generate", tags=["Generate"])
 app.include_router(routes_test.router)
-app.include_router(routes_leads.router)
+app.include_router(routes_leads.router, prefix="/leads", tags=["Leads"])
 
 @app.get("/")
 def read_root():
