@@ -1,69 +1,35 @@
-from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel
-from typing import List, Optional
-from uuid import uuid4
+from fastapi import APIRouter, HTTPException
+from typing import List
+from app.schemas.schemas import LeadCreate, LeadUpdate, LeadResponse
+from app.crud.lead import create_lead, get_lead, get_all_leads, update_lead, delete_lead
 
 router = APIRouter()
 
-class Lead(BaseModel):
-    name: str
-    email: str
-    company: str
-    industry: str
+@router.post("/", response_model=LeadResponse)
+async def create_new_lead(lead: LeadCreate):
+    created = await create_lead(lead.name, lead.email, lead.industry)
+    return created
 
-# Simulated in-memory database
-leads_db = {}
-
-# Create a new lead
-@router.post("/leads/create")
-async def create_lead(lead: Lead):
-    lead_id = str(uuid4())
-    leads_db[lead_id] = lead.dict()
-    return {"lead_id": lead_id, "lead": lead}
-
-# Get a lead by ID
-@router.get("/leads/{lead_id}")
-async def get_lead(lead_id: str):
-    lead = leads_db.get(lead_id)
+@router.get("/{lead_id}", response_model=LeadResponse)
+async def read_lead(lead_id: int):
+    lead = await get_lead(lead_id)
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
-    return {"lead_id": lead_id, "lead": lead}
+    return lead
 
-# Search leads
-@router.get("/search")
-async def search_leads(
-    name: Optional[str] = Query(None),
-    industry: Optional[str] = Query(None)
-):
-    results = []
+@router.get("/", response_model=List[LeadResponse])
+async def read_all_leads():
+    leads = await get_all_leads()
+    return leads
 
-    for lead_id, lead in leads_db.items():
-        if name and name.lower() not in lead["name"].lower():
-            continue
-        if industry and industry.lower() not in lead["industry"].lower():
-            continue
-        results.append({"lead_id": lead_id, "lead": lead})
-
-    if not results:
+@router.put("/{lead_id}", response_model=LeadResponse)
+async def update_existing_lead(lead_id: int, lead: LeadUpdate):
+    updated = await update_lead(lead_id, lead.name, lead.email, lead.industry)
+    if not updated:
         raise HTTPException(status_code=404, detail="Lead not found")
-    return results
+    return updated
 
-# Bulk create leads
-@router.post("/bulk-create")
-async def bulk_create_leads(leads: List[Lead]):
-    created = []
-    for lead in leads:
-        lead_id = str(uuid4())
-        leads_db[lead_id] = lead.dict()
-        created.append({"lead_id": lead_id, "lead": lead})
-    return {"message": f"{len(created)} leads created", "leads": created}
-
-# Partial update lead
-@router.patch("/leads/{lead_id}")
-async def partial_update_lead(lead_id: str, updates: dict):
-    lead = leads_db.get(lead_id)
-    if not lead:
-        raise HTTPException(status_code=404, detail="Lead not found")
-    lead.update(updates)
-    leads_db[lead_id] = lead
-    return {"message": "Lead partially updated", "lead": lead}
+@router.delete("/{lead_id}")
+async def delete_existing_lead(lead_id: int):
+    result = await delete_lead(lead_id)
+    return result
