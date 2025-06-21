@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from app.db.database import engine, database, Base  # ⬅️ Import Base here
 from app.db.models import Lead  # ⬅️ Import Lead model so it's registered
 from app.api import routes_upload, routes_generate, routes_test, routes_leads, routes_auth
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
@@ -23,7 +24,16 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Include routers
+#front-end
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include routers for API's
 app.include_router(routes_upload.router, prefix="/upload", tags=["Upload"])
 app.include_router(routes_generate.router, prefix="/generate-message", tags=["Generate"])
 app.include_router(routes_test.router)
@@ -33,3 +43,6 @@ app.include_router(routes_auth.router, prefix="/auth", tags=["Auth"])
 @app.get("/")
 def read_root():
     return {"message": "Welcome to LeadsGPT 🚀"}
+
+
+
