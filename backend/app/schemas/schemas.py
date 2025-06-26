@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 class LeadCreate(BaseModel):
     name: str
@@ -15,6 +16,7 @@ class LeadResponse(BaseModel):
     name: str
     email: str
     industry: str
+    created_at: datetime
 
     class Config:
         orm_mode = True

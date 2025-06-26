@@ -1,24 +1,23 @@
 from pydantic import BaseModel, EmailStr
+from datetime import datetime
 from typing import Optional
 
-
-class LeadBase(BaseModel):
+class LeadCreate(BaseModel):
     name: str
     email: EmailStr
-    company: str
     industry: str
-
-
-class LeadCreate(LeadBase):
-    pass
-
 
 class LeadUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
-    company: Optional[str] = None
     industry: Optional[str] = None
 
+class LeadResponse(BaseModel):
+    id: int
+    name: str
+    email: EmailStr
+    industry: str
+    created_at: datetime  # ✅ Ensure this is included
 
-class LeadOut(LeadBase):
-    lead_id: str
+    class Config:
+        orm_mode = True
